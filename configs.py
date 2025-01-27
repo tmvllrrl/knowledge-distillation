@@ -40,11 +40,14 @@ class BaselineConfig():
         ]
         self.optimizer = Adam(self.params)
 
-        base_transforms = transforms.Compose([
+        train_transforms = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomRotation(15),
             transforms.ToTensor(),
+            transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
         ])
 
-        self.train_dataset = CIFAR10(root='./data', train=True, transform=base_transforms)
+        self.train_dataset = CIFAR10(root='./data', train=True, transform=train_transforms)
 
         self.train_dataloader = DataLoader(
             dataset=self.train_dataset, 
@@ -53,8 +56,13 @@ class BaselineConfig():
             num_workers=self.num_workers
         )    
 
+        test_transforms = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])
+        ])
+
         # CIFAR10 does not have a validation split
-        self.test_dataset = CIFAR10(root='./data', train=False, transform=base_transforms)
+        self.test_dataset = CIFAR10(root='./data', train=False, transform=test_transforms)
         
         self.test_dataloader = DataLoader(
             dataset=self.test_dataset, 

@@ -33,8 +33,8 @@ class Trainer():
         # Set up necessary items for training
         self.epochs = epochs
         self.criterion = criterion
-        self.soft_cross_entropy = SoftCrossEntropyLoss()
-        self.softmax = KnowledgeDistilSoftmax(T=20)
+        self.kd_cross_entropy = SoftCrossEntropyLoss()
+        self.kd_softmax = KnowledgeDistilSoftmax(T=20)
         self.optimizer = optimizer
 
         # Set up train and validation dataloaders
@@ -63,23 +63,23 @@ class Trainer():
 
                 with torch.no_grad():
                     teacher_logits = self.teacher(image)
-                    teacher_probs = KnowledgeDistilSoftmax(teacher_logits)
+                    teacher_probs = self.kd_softmax(teacher_logits)
 
                 student_logits = self.student(image)
-                student_probs = KnowledgeDistilSoftmax(student_logits)
+                student_probs = self.kd_softmax(student_logits)
 
-                soft_term = SoftCrossEntropyLoss(student_probs, teacher_probs)
+                soft_term = self.kd_cross_entropy(student_probs, teacher_probs)
                 hard_term = self.criterion(student_logits, label)
                 loss = soft_term + hard_term
 
-                loss.backwards()
+                loss.backward()
                 self.optimizer.step()
 
                 train_running_loss += loss.item()
 
                 _, predicted = torch.max(student_logits, 1)
-                train_correct += (predicted == student_logits).sum().item()
-                train_total += len(student_logits)
+                train_correct += (predicted == label).sum().item()
+                train_total += len(label)
 
             train_loss = train_running_loss / len(self.train_dataloader)
             train_accuracy = train_correct / train_total
@@ -109,12 +109,12 @@ class Trainer():
                 label.to(self.device)
 
                 teacher_logits = self.teacher(image)
-                teacher_probs = KnowledgeDistilSoftmax(teacher_logits)
+                teacher_probs = self.kd_softmax(teacher_logits)
 
                 student_logits = self.student(image)
-                student_probs = KnowledgeDistilSoftmax(student_logits)
+                student_probs = self.kd_softmax(student_logits)
 
-                soft_term = SoftCrossEntropyLoss(student_probs, teacher_probs)
+                soft_term = self.kd_cross_entropy(student_probs, teacher_probs)
                 hard_term = self.criterion(student_logits, label)
 
                 loss = soft_term + hard_term
@@ -122,8 +122,8 @@ class Trainer():
                 valid_running_loss += loss.item()
 
                 _, predicted = torch.max(student_logits, 1)
-                valid_correct += (predicted == student_logits).sum().item()
-                valid_total += len(student_logits)
+                valid_correct += (predicted == label).sum().item()
+                valid_total += len(label)
 
             valid_loss = valid_running_loss / len(self.val_dataloader)
             valid_accuracy = valid_correct / valid_total
