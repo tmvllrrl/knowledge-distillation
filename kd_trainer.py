@@ -56,8 +56,8 @@ class Trainer():
             train_total = 0
 
             for bi, (image, label) in enumerate(self.train_dataloader):
-                image.to(self.device)
-                label.to(self.device)
+                image = image.to(self.device)
+                label = label.to(self.device)
 
                 self.optimizer.zero_grad()
 
@@ -69,8 +69,9 @@ class Trainer():
                 student_probs = self.kd_softmax(student_logits)
 
                 soft_term = self.kd_cross_entropy(student_probs, teacher_probs)
-                hard_term = self.criterion(student_logits, label)
-                loss = soft_term + hard_term
+                hard_term = 1e-2 * self.criterion(student_logits, label)
+                # print(f"Hard: {hard_term}, Soft: {soft_term}")
+                loss = soft_term
 
                 loss.backward()
                 self.optimizer.step()
@@ -93,7 +94,7 @@ class Trainer():
 
             pbar.set_description(f"EPOCH {ep+1} TRAIN LOSS: {train_loss:.4f}")
 
-            torch.save(self.student.state_dict(), f'{self.save_dir}/student_{ep+1}')
+            torch.save(self.student.state_dict(), f'{self.save_dir}/student_{ep+1}.pt')
 
     def validate(self) -> tuple[float, float]:
         self.teacher.eval()
@@ -105,8 +106,8 @@ class Trainer():
 
         with torch.no_grad():
             for bi, (image, label) in enumerate(self.val_dataloader):
-                image.to(self.device)
-                label.to(self.device)
+                image = image.to(self.device)
+                label = label.to(self.device)
 
                 teacher_logits = self.teacher(image)
                 teacher_probs = self.kd_softmax(teacher_logits)

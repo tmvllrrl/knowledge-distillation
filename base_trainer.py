@@ -50,8 +50,8 @@ class Trainer():
             train_total = 0
 
             for bi, (image, label) in enumerate(self.train_dataloader):
-                image.to(self.device)
-                label.to(self.device)
+                image = image.to(self.device)
+                label = label.to(self.device)
 
                 self.optimizer.zero_grad()
 
@@ -80,7 +80,7 @@ class Trainer():
 
             pbar.set_description(f"EPOCH {ep+1} TRAIN LOSS: {train_loss:.4f}")
 
-            torch.save(self.classifier.state_dict(), f'{self.save_dir}/classifier_{ep+1}')
+            torch.save(self.classifier.state_dict(), f'{self.save_dir}/classifier_{ep+1}.pt')
 
     def validate(self) -> tuple[float, float]:
         self.classifier.eval()
@@ -91,8 +91,8 @@ class Trainer():
 
         with torch.no_grad():
             for bi, (image, label) in enumerate(self.val_dataloader):
-                image.to(self.device)
-                label.to(self.device)
+                image = image.to(self.device)
+                label = label.to(self.device)
 
                 logits = self.classifier(image)
 
