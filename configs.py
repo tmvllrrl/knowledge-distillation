@@ -7,7 +7,7 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
-from torchvision.models import resnet18, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
+from torchvision.models import resnet18, ResNet18_Weights, resnet34, ResNet34_Weights, resnet50, ResNet50_Weights
 
 class BaselineConfig():
     def __init__(self, save_dir: str) -> None:
@@ -31,8 +31,8 @@ class BaselineConfig():
 
     def init_objects(self) -> None:
         # Initializing classifier and changing FC for 10 classes
-        self.classifier = resnet50(weights=ResNet50_Weights.DEFAULT)
-        self.classifier.fc = nn.Linear(2048, 10)
+        self.classifier = resnet18(weights=ResNet18_Weights.DEFAULT)
+        self.classifier.fc = nn.Linear(512, 10)
 
         self.criterion = nn.CrossEntropyLoss()
         self.params = [
@@ -103,7 +103,7 @@ class KDConfig():#
         self.batch_size: int = 128
         self.num_workers: int = 2
 
-        self.teacher_name: str = "ResNet34"
+        self.teacher_name: str = "ResNet50"
         self.student_name: str = "ResNet18"
         self.criterion_name: str = "CrossEntropyLoss"
         self.optimizer_name: str = "Adam"
@@ -120,7 +120,7 @@ class KDConfig():#
         # Assuming we have a pre-trained teacher model
         self.teacher.load_state_dict(torch.load('./runs/rn50_teacher/classifier_50.pt', weights_only=True))
 
-        self.student = resnet18(weights=None)
+        self.student = resnet18(weights=ResNet18_Weights.DEFAULT)
         self.student.fc = nn.Linear(512, 10)
 
         self.criterion = nn.CrossEntropyLoss()
