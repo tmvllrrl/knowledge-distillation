@@ -11,3 +11,7 @@ For comparison purposes, 4 ResNet-18 models were trained: 2 using knowledge dist
 | KD-RN18-rand        | 80.1 ± 0.0049 |
 | RN18-in1k           | 84.8 ± 0.0004 |
 | KD-RN18-in1k        | 86.2 ± 0.0014 |
+
+The averages and standard deviations were computed using 3 random runs for each model.
+
+We can see from the results that knowledge distillation results in significantly better performance compared to regular classification training.
